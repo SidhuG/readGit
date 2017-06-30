@@ -1,0 +1,5 @@
+---
+project_name: example_config
+git_config:
+ - url: https://github.com/SidhuG/yaml2map.git
+ - tag: 0.0.1
