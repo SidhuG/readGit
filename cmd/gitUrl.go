@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // gitUrlCmd represents the gitUrl command
@@ -40,6 +41,9 @@ func init() {
 
 	gitUrlCmd.PersistentFlags().String("tag", "", "tag to use")
 
+	viper.BindPFlag("url", gitUrlCmd.PersistentFlags().Lookup("url"))
+	viper.BindPFlag("tag", gitUrlCmd.PersistentFlags().Lookup("tag"))
+	
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// gitUrlCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

@@ -1,5 +1,8 @@
 ---
-project_name: example_config
 git_config:
- - url: https://github.com/SidhuG/yaml2map.git
- - tag: 0.0.1
+  - url: https://<git_endpoint>/<git_repo>.git
+  - tag: 0.0.1
+FQDN_List: 
+  - h1kka01-v01.activity-capture.stg1.ovp.bskby.com
+  - h1kka02-v01.activity-capture.stg1.ovp.bskby.com
+  - h1kka03-v01.activity-capture.stg1.ovp.bskby.com
