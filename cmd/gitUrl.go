@@ -18,7 +18,11 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	//"github.com/SidhuG/readGit/gitCmd"
 )
+var git_url string 
+var git_tag string 
+var FQDN_list string
 
 // gitUrlCmd represents the gitUrl command
 var gitUrlCmd = &cobra.Command{
@@ -26,7 +30,10 @@ var gitUrlCmd = &cobra.Command{
 	Short: "remote repo url",
 	Long: `Checks out remote git repo`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gitUrl called")
+		fmt.Println("gitUrl command used, values in config file will be overridden with following")
+		fmt.Println("--- Git URL: ", git_url)
+		fmt.Println("--- Git Tag: ", git_tag)
+		fmt.Println("--- FQDNs: ", FQDN_list)
 	},
 }
 
@@ -37,9 +44,15 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	gitUrlCmd.PersistentFlags().String("url", "", "git remote url")
 
-	gitUrlCmd.PersistentFlags().String("tag", "", "tag to use")
+	//git url where configuration files are located
+	gitUrlCmd.PersistentFlags().StringVarP(&git_url, "url", "u", "", "git remote url")
+
+	//git tag to release
+	gitUrlCmd.PersistentFlags().StringVarP(&git_tag, "tag", "t", "", "tag to use")
+
+	//list of FQDN to apply this configuration change
+	gitUrlCmd.PersistentFlags().StringVarP(&FQDN_list, "fqdns", "f", "", "FQDNs to apply this configuration")
 
 	viper.BindPFlag("url", gitUrlCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("tag", gitUrlCmd.PersistentFlags().Lookup("tag"))

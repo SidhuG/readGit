@@ -20,6 +20,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/SidhuG/readGit/gitCmd"
 )
 
 var cfgFile string
@@ -43,17 +44,22 @@ var RootCmd = &cobra.Command{
 		fmt.Print("Found keys in viper: ",viper.AllKeys())
 		fmt.Println()
 
-		//Extract git url and git tag
+		//Extract git url, git tag and git user ssh id file path
 		map_git_config = viper.Get("git_config").([]interface{})
 		git_config_url := map_git_config[0].(map[interface{}]interface{})
 		git_config_tag := map_git_config[1].(map[interface{}]interface{})
-		fmt.Println("Found git url: ",git_config_url["url"])
-		fmt.Println("Found git tag: ", git_config_tag["tag"])
+		git_user_id := map_git_config[2].(map[interface{}]interface{})
+		fmt.Println("Using git url: ",git_config_url["url"])
+		fmt.Println("Using git tag: ", git_config_tag["tag"])
+		fmt.Println("Using git user id : ", git_user_id["ssh_id"])
 
 		//Extract List of FQDNs to apply changes to
 		map_FQDN_list := viper.Get("fqdn_list").([]interface{})
-		fmt.Println("Found FQDN List: ", map_FQDN_list)
-		fmt.Println("Found first FQDN : " , map_FQDN_list[0])
+		fmt.Println("To update hosts: ", map_FQDN_list)
+		//fmt.Println("Found first FQDN : " , map_FQDN_list[0])
+
+		//Checkout git repo
+		dirPath, err := CheckOutRepo(git_config_url["url"], git_config_tag["tag"], git_user_id["ssh_id"])
 
 		// traverse FQDN List
 		for _, fqdn := range map_FQDN_list {
