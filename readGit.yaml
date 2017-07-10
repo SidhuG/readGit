@@ -1,8 +1,11 @@
 ---
 git_config:
-  - url: https://github.com/SidhuG/hiera_conf_example.git
+  - url: github.com/
+  - projectrepo: hiera_conf_example.git
   - tag: 0.0.1
+  - user: SidhuG
   - ssh_id: $HOME/.ssh/SidhuG
+  - branch: master
 FQDN_List: 
   - h1kka01-v01.activity-capture.stg1.ovp.bskby.com
   - h1kka02-v01.activity-capture.stg1.ovp.bskby.com
