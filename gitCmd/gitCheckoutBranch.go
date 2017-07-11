@@ -5,6 +5,7 @@ import (
 	//"github.com/libgit2/git2go"
 	"fmt"
 	"gopkg.in/libgit2/git2go.v25"
+	"log"
 )
 
 var git_sshid string
@@ -19,9 +20,15 @@ func certificateCheckCallback(cert *git.Certificate, valid bool, hostname string
 	return 0
 }
 
-func checkoutBranch(gitUrl string, branchName string, sshid string) error {
-
+func setSSHCredentials(sshid string) int {
 	git_sshid = sshid
+	log.Println("Setting key file to : ", git_sshid)
+	return 0
+}
+
+func checkoutBranch(gitUrl string, branchName string) error {
+
+	
 	cloneOptions := &git.CloneOptions{}
 	// use FetchOptions instead of directly RemoteCallbacks
 	// https://github.com/libgit2/git2go/commit/36e0a256fe79f87447bb730fda53e5cbc90eb47c
@@ -32,10 +39,12 @@ func checkoutBranch(gitUrl string, branchName string, sshid string) error {
 		},
 	}
 
-	fmt.Println("About clone: ", gitUrl)
+	fmt.Println("About to clone: ", gitUrl)
 	repo, err := git.Clone(gitUrl, "tmp", cloneOptions)
 	if err != nil {
-		fmt.Println("FATAL: could not clone")
+		log.Panic(err)
+		//log.Println("FATAL: could not clone")
+		//return err
 	}
 	fmt.Println("Cloned repo: ", repo)
 

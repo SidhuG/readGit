@@ -12,6 +12,8 @@ import (
 	//"gopkg.in/libgit2/git2go.v25"
 	"os"
 	"path/filepath"
+	homedir "github.com/mitchellh/go-homedir"
+
 	//"strconv"
 	//"reflect"
 )
@@ -58,7 +60,14 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 	//if err != nil {
 	//	panic(err)
 	//}
-	checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.SshId)
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	sshKeyFile := filepath.Join(home, rep.SshId)
+	setSSHCredentials(sshKeyFile)
+	checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch)
 
 	//4. return the path to where repo has been cloned
 
