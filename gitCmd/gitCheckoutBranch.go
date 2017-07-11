@@ -11,7 +11,8 @@ import (
 var git_sshid string
 
 func credentialsCallback(url string, username string, allowedTypes git.CredType) (git.ErrorCode, *git.Cred) {
-	ret, cred := git.NewCredSshKey("git", git_sshid+".pub", git_sshid, "")
+	//ret, cred := git.NewCredSshKey("git", git_sshid+".pub", git_sshid, "")
+	ret, cred := git.NewCredSshKeyFromAgent(username)
 	return git.ErrorCode(ret), &cred
 }
 
@@ -29,15 +30,29 @@ func setSSHCredentials(sshid string) int {
 func checkoutBranch(gitUrl string, branchName string) error {
 
 	
-	cloneOptions := &git.CloneOptions{}
+	//cloneOptions := &git.CloneOptions{}
 	// use FetchOptions instead of directly RemoteCallbacks
 	// https://github.com/libgit2/git2go/commit/36e0a256fe79f87447bb730fda53e5cbc90eb47c
-	cloneOptions.FetchOptions = &git.FetchOptions{
-		RemoteCallbacks: git.RemoteCallbacks{
-			CredentialsCallback:      credentialsCallback,
-			CertificateCheckCallback: certificateCheckCallback,
-		},
-	}
+	//cloneOptions.FetchOptions = &git.FetchOptions{
+	//	RemoteCallbacks: git.RemoteCallbacks{
+	//		CredentialsCallback:      credentialsCallback,
+	//		CertificateCheckCallback: certificateCheckCallback,
+	//	},
+	//}
+	cbs := git.RemoteCallbacks{
+        CredentialsCallback:      credentialsCallback,
+        CertificateCheckCallback: certificateCheckCallback,
+    }
+
+	cloneOptions := &git.CloneOptions{}
+
+	cloneOptions.FetchOptions = &git.FetchOptions{}
+
+	cloneOptions.CheckoutOpts = &git.CheckoutOpts{}
+
+	cloneOptions.CheckoutOpts.Strategy = 1 //Otherwise it is dry run. Nothing really clones
+
+	cloneOptions.FetchOptions.RemoteCallbacks = cbs
 
 	fmt.Println("About to clone: ", gitUrl)
 	repo, err := git.Clone(gitUrl, "tmp", cloneOptions)
