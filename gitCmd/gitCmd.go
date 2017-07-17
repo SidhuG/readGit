@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	homedir "github.com/mitchellh/go-homedir"
+	"log"
 
 	//"strconv"
 	//"reflect"
@@ -44,7 +45,7 @@ func emptydir(dir string) error {
 func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 
 	//1. Make tmp dir
-	tmppath := filepath.Join(".", "tmp")
+	tmppath := filepath.Join("/tmp/", "readGit")
 	if _, err := os.Stat(tmppath); os.IsNotExist(err) {
 		os.Mkdir(tmppath, 0755)
 	}
@@ -62,10 +63,12 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 	}
 	sshKeyFile := filepath.Join(home, rep.SshId)
 	setSSHCredentials(sshKeyFile)
-	checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
-
+	retpath, _ := checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
+    if retpath != tmppath {
+    	log.Println("ERROR: could not checkout git repo at specific branch/tag")
+    }
 	//4. return the path to where repo has been cloned
 
-	return tmppath, err
+	return retpath, err
 
 }
