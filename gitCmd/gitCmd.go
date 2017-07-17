@@ -55,11 +55,6 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 	}
 
 	//3. git clone
-	//git.CloneOption{}
-	//repo, err := git.Clone("git://github.com/gopheracademy/gopheracademy-web.git", "web", &git.CloneOptions{})
-	//if err != nil {
-	//	panic(err)
-	//}
 	home, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err)
@@ -67,7 +62,7 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 	}
 	sshKeyFile := filepath.Join(home, rep.SshId)
 	setSSHCredentials(sshKeyFile)
-	checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch)
+	checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
 
 	//4. return the path to where repo has been cloned
 

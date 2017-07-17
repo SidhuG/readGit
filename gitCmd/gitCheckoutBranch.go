@@ -1,14 +1,25 @@
 package gitCmd
 
 import (
-	"errors"
+	//"errors"
 	//"github.com/libgit2/git2go"
+	//"errors"
+	"strings"
 	"fmt"
 	"gopkg.in/libgit2/git2go.v25"
 	"log"
 )
 
 var git_sshid string
+
+// MyError is an error implementation that includes a time and message.
+type gitCmdError struct {
+	What string
+}
+
+func (e gitCmdError) Error() string {
+	return fmt.Sprintf("FATAL: %v", e.What)
+}
 
 func credentialsCallback(url string, username string, allowedTypes git.CredType) (git.ErrorCode, *git.Cred) {
 	//ret, cred := git.NewCredSshKey("git", git_sshid+".pub", git_sshid, "")
@@ -27,107 +38,110 @@ func setSSHCredentials(sshid string) int {
 	return 0
 }
 
-func checkoutBranch(gitUrl string, branchName string) error {
+func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, error) {
 
+	var tmpDirPath = "/tmp/readGit"
 	
-	//cloneOptions := &git.CloneOptions{}
-	// use FetchOptions instead of directly RemoteCallbacks
-	// https://github.com/libgit2/git2go/commit/36e0a256fe79f87447bb730fda53e5cbc90eb47c
-	//cloneOptions.FetchOptions = &git.FetchOptions{
-	//	RemoteCallbacks: git.RemoteCallbacks{
-	//		CredentialsCallback:      credentialsCallback,
-	//		CertificateCheckCallback: certificateCheckCallback,
-	//	},
-	//}
 	cbs := git.RemoteCallbacks{
         CredentialsCallback:      credentialsCallback,
         CertificateCheckCallback: certificateCheckCallback,
     }
 
 	cloneOptions := &git.CloneOptions{}
-
-	cloneOptions.FetchOptions = &git.FetchOptions{}
-
-	cloneOptions.CheckoutOpts = &git.CheckoutOpts{}
-
+	cloneOptions.FetchOptions = &git.FetchOptions{DownloadTags: git.DownloadTagsAll}
+	cloneOptions.CheckoutOpts = &git.CheckoutOpts{Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,}
 	cloneOptions.CheckoutOpts.Strategy = 1 //Otherwise it is dry run. Nothing really clones
-
 	cloneOptions.FetchOptions.RemoteCallbacks = cbs
 
 	fmt.Println("About to clone: ", gitUrl)
-	repo, err := git.Clone(gitUrl, "tmp", cloneOptions)
+	repo, err := git.Clone(gitUrl, tmpDirPath, cloneOptions)
 	if err != nil {
 		log.Panic(err)
 		//log.Println("FATAL: could not clone")
 		//return err
 	}
-	fmt.Println("Cloned repo: ", repo)
-
+	
 	checkoutOpts := &git.CheckoutOpts{
 		Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,
 	}
+
+	//Parse tags
+	iter, err := repo.NewReferenceIterator()
+    var tagid *git.Oid
+    var tagObjId *git.Oid
+	var tagName string
+	ref, err := iter.Next()
+	for err == nil {
+    	if ref.IsTag() {
+        	fmt.Println(ref.Name())
+        	tagName = strings.TrimPrefix(ref.Name(), "refs/tags/")
+        	if tagName == tagToUse {
+        		tagid = ref.Target()
+        		tag, err := repo.LookupTag(tagid)
+        		if err != nil {
+        			fmt.Println("Could not look up tag Id")
+        		}
+        		tagObjId = tag.TargetId()
+        		break
+        	}
+    	}
+    	ref, err = iter.Next()
+	}
+	if tagName != tagToUse {
+		log.Println("FATAL: Could not find requested tag: ", tagToUse)
+		return "", gitCmdError{"Could not find requested tag"}
+	}
+
 	//Getting the reference for the remote branch
 	// remoteBranch, err := repo.References.Lookup("refs/remotes/origin/" + branchName)
 	remoteBranch, err := repo.LookupBranch("origin/"+branchName, git.BranchRemote)
 	if err != nil {
+		log.Panic(err)
 		fmt.Println("Failed to find remote branch: " + branchName)
-		return err
+		return "", gitCmdError{"Failed to find remote branch:"}
 	}
 	defer remoteBranch.Free()
-
-	// Lookup for commit from remote branch
-	commit, err := repo.LookupCommit(remoteBranch.Target())
+    
+    
+    //Find commit for the tag
+    headCommit, err := repo.LookupCommit(tagObjId)
 	if err != nil {
-		fmt.Println("Failed to find remote branch commit: " + branchName)
-		return err
+		panic(err)
 	}
-	defer commit.Free()
-
-	localBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
-
-	// No local branch, lets create one
-	if localBranch == nil || err != nil {
-		// Creating local branch
-		localBranch, err = repo.CreateBranch(branchName, commit, false)
-		if err != nil {
-			fmt.Println("Failed to create local branch: " + branchName)
-			return err
-		}
-
-		// Setting upstream to origin branch
-		err = localBranch.SetUpstream("origin/" + branchName)
-		if err != nil {
-			fmt.Println("Failed to create upstream to origin/" + branchName)
-			return err
-		}
-	}
-	if localBranch == nil {
-		return errors.New("Error while locating/creating local branch")
+	//return nil
+    localBranchName := "v" + tagToUse
+    //Create a local branch at specified tag
+    localBranch, err := repo.CreateBranch(localBranchName, headCommit, false)
+	if err != nil {
+		fmt.Println("Failed to create local branch: " + localBranchName)
+		return "", gitCmdError{"Failed to create local branch."}
 	}
 	defer localBranch.Free()
-
-	// Getting the tree for the branch
+    
+    // Getting the tree for the branch
 	localCommit, err := repo.LookupCommit(localBranch.Target())
 	if err != nil {
-		fmt.Println("Failed to lookup for commit in local branch " + branchName)
-		return err
+		log.Print("Failed to lookup for commit in local branch " + localBranchName)
+		return "", gitCmdError{"Failed to lookup for commit in local branch"}
 	}
 	defer localCommit.Free()
 
 	tree, err := repo.LookupTree(localCommit.TreeId())
 	if err != nil {
-		fmt.Println("Failed to lookup for tree " + branchName)
-		return err
+		log.Print("Failed to lookup for tree " + localBranchName)
+		return "",gitCmdError{"Failed to lookup for tree"}
 	}
 	defer tree.Free()
 
 	// Checkout the tree
 	err = repo.CheckoutTree(tree, checkoutOpts)
 	if err != nil {
-		fmt.Println("Failed to checkout tree " + branchName)
-		return err
+		log.Print("Failed to checkout tree " + localBranchName)
+		return "", gitCmdError{"Failed to checkout tree"}
 	}
+
 	// Setting the Head to point to our branch
-	repo.SetHead("refs/heads/" + branchName)
-	return nil
+	repo.SetHead("refs/heads/" + localBranchName)
+
+    return tmpDirPath, gitCmdError{""}
 }
