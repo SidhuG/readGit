@@ -18,6 +18,8 @@ import (
 	"os"
 
 	git "github.com/SidhuG/readGit/gitCmd"
+	hiera "github.com/SidhuG/readGit/parseHiera"
+	kv "github.com/SidhuG/readGit/kvEndpoint"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

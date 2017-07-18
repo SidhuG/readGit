@@ -1,3 +1,9 @@
+//*****************************************************************
+// Package: gitCmd
+// File: gitCheckouBranch
+// Purpose: Checkout git branch at specific tags
+// Author: SidhuG
+//*******************************************************************
 package gitCmd
 
 import (
