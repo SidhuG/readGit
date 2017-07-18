@@ -19,6 +19,8 @@ import (
 
 	git "github.com/SidhuG/readGit/gitCmd"
 	hiera "github.com/SidhuG/readGit/parseHiera"
+	fqdn "github.com/SidhuG/readGit/verifyFQDNs"
+
 	kv "github.com/SidhuG/readGit/kvEndpoint"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -86,6 +88,8 @@ var RootCmd = &cobra.Command{
 			fmt.Println("Constructing endpoints for FQDN: ", fqdn)
 
 		}
+
+		fqdn.verify(dirPath, map_FQDN_list)
 
 	},
 }
