@@ -18,3 +18,14 @@ type verifyFQDNError struct {
 func (e verifyFQDNError) Error() string {
 	return fmt.Sprintf("FATAL: %v", e.What)
 }
+
+//
+type verifyStatus struct {
+	hostname string,
+	verifyStatus bool
+}
+
+//
+func verify() <- chan verifyStatus{
+
+}
