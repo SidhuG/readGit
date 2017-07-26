@@ -83,14 +83,13 @@ var RootCmd = &cobra.Command{
 		} else {
 			fmt.Println("Git repo cloned at: ", dirPath)
 		}
+		
 		// traverse FQDN List
-		for _, hostname := range map_FQDN_list {
-			fmt.Println("Constructing endpoints for FQDN: ", hostname)
+		//for _, hostname := range map_FQDN_list {
+		//	fmt.Println("Constructing endpoints for FQDN: ", hostname)
+		//}
 
-		}
-
-		verifiedList := fqdn.verify(dirPath, map_FQDN_list)
-
+		verifiedListCh := fqdn.verify(dirPath, map_FQDN_list)
 	},
 }
 

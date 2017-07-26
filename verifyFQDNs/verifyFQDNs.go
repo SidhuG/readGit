@@ -22,10 +22,29 @@ func (e verifyFQDNError) Error() string {
 //
 type verifyStatus struct {
 	hostname string,
-	verifyStatus bool
+	status bool
 }
 
-//
-func verify() <- chan verifyStatus{
+func LoadYaml(dirPath string) int {
 
+} 
+
+//Verify if FWDN list contains valid FQDNs
+func Verify(fqdns []string) <-chan verifyStatus {
+	ch := make(chan verifyStatus)
+	go funcVerfiy() {
+		// traverse FQDN List
+		for _, hostname := range fqdns {
+			fmt.Println("Constructing endpoints for FQDN: ", hostname)
+
+			//if hostname is valid, then set verifyStatus to true, otherwise false
+			vs := verifyStatus {
+				hostname: "",
+				status: true
+			}
+            ch <- vs
+
+		}
+	}()
+	return ch
 }
