@@ -21,7 +21,7 @@ func (e verifyFQDNError) Error() string {
 
 //
 type verifyStatus struct {
-	hostname string,
+	hostname string
 	status bool
 }
 

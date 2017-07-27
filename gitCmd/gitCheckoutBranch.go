@@ -10,10 +10,10 @@ import (
 	//"errors"
 	//"github.com/libgit2/git2go"
 	//"errors"
-	"strings"
 	"fmt"
 	"gopkg.in/libgit2/git2go.v25"
 	"log"
+	"strings"
 )
 
 var git_sshid string
@@ -47,15 +47,15 @@ func setSSHCredentials(sshid string) int {
 func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, error) {
 
 	var tmpDirPath = "/tmp/readGit"
-	
+
 	cbs := git.RemoteCallbacks{
-        CredentialsCallback:      credentialsCallback,
-        CertificateCheckCallback: certificateCheckCallback,
-    }
+		CredentialsCallback:      credentialsCallback,
+		CertificateCheckCallback: certificateCheckCallback,
+	}
 
 	cloneOptions := &git.CloneOptions{}
 	cloneOptions.FetchOptions = &git.FetchOptions{DownloadTags: git.DownloadTagsAll}
-	cloneOptions.CheckoutOpts = &git.CheckoutOpts{Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,}
+	cloneOptions.CheckoutOpts = &git.CheckoutOpts{Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs}
 	cloneOptions.CheckoutOpts.Strategy = 1 //Otherwise it is dry run. Nothing really clones
 	cloneOptions.FetchOptions.RemoteCallbacks = cbs
 
@@ -66,32 +66,32 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 		//log.Println("FATAL: could not clone")
 		//return err
 	}
-	
+
 	checkoutOpts := &git.CheckoutOpts{
 		Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,
 	}
 
 	//Parse tags
 	iter, err := repo.NewReferenceIterator()
-    var tagid *git.Oid
-    var tagObjId *git.Oid
+	var tagid *git.Oid
+	var tagObjId *git.Oid
 	var tagName string
 	ref, err := iter.Next()
 	for err == nil {
-    	if ref.IsTag() {
-        	fmt.Println(ref.Name())
-        	tagName = strings.TrimPrefix(ref.Name(), "refs/tags/")
-        	if tagName == tagToUse {
-        		tagid = ref.Target()
-        		tag, err := repo.LookupTag(tagid)
-        		if err != nil {
-        			fmt.Println("Could not look up tag Id")
-        		}
-        		tagObjId = tag.TargetId()
-        		break
-        	}
-    	}
-    	ref, err = iter.Next()
+		if ref.IsTag() {
+			fmt.Println(ref.Name())
+			tagName = strings.TrimPrefix(ref.Name(), "refs/tags/")
+			if tagName == tagToUse {
+				tagid = ref.Target()
+				tag, err := repo.LookupTag(tagid)
+				if err != nil {
+					fmt.Println("Could not look up tag Id")
+				}
+				tagObjId = tag.TargetId()
+				break
+			}
+		}
+		ref, err = iter.Next()
 	}
 	if tagName != tagToUse {
 		log.Println("FATAL: Could not find requested tag: ", tagToUse)
@@ -107,24 +107,23 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 		return "", gitCmdError{"Failed to find remote branch:"}
 	}
 	defer remoteBranch.Free()
-    
-    
-    //Find commit for the tag
-    headCommit, err := repo.LookupCommit(tagObjId)
+
+	//Find commit for the tag
+	headCommit, err := repo.LookupCommit(tagObjId)
 	if err != nil {
 		panic(err)
 	}
 	//return nil
-    localBranchName := "v" + tagToUse
-    //Create a local branch at specified tag
-    localBranch, err := repo.CreateBranch(localBranchName, headCommit, false)
+	localBranchName := "v" + tagToUse
+	//Create a local branch at specified tag
+	localBranch, err := repo.CreateBranch(localBranchName, headCommit, false)
 	if err != nil {
 		fmt.Println("Failed to create local branch: " + localBranchName)
 		return "", gitCmdError{"Failed to create local branch."}
 	}
 	defer localBranch.Free()
-    
-    // Getting the tree for the branch
+
+	// Getting the tree for the branch
 	localCommit, err := repo.LookupCommit(localBranch.Target())
 	if err != nil {
 		log.Print("Failed to lookup for commit in local branch " + localBranchName)
@@ -135,7 +134,7 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 	tree, err := repo.LookupTree(localCommit.TreeId())
 	if err != nil {
 		log.Print("Failed to lookup for tree " + localBranchName)
-		return "",gitCmdError{"Failed to lookup for tree"}
+		return "", gitCmdError{"Failed to lookup for tree"}
 	}
 	defer tree.Free()
 
@@ -149,5 +148,5 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 	// Setting the Head to point to our branch
 	repo.SetHead("refs/heads/" + localBranchName)
 
-    return tmpDirPath, gitCmdError{""}
+	return tmpDirPath, gitCmdError{""}
 }

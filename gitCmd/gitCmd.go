@@ -10,11 +10,10 @@ import (
 	"fmt"
 	//homedir "github.com/mitchellh/go-homedir"
 	//"gopkg.in/libgit2/git2go.v25"
-	"os"
-	"path/filepath"
 	homedir "github.com/mitchellh/go-homedir"
 	"log"
-
+	"os"
+	"path/filepath"
 	//"strconv"
 	//"reflect"
 )
@@ -64,9 +63,9 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 	sshKeyFile := filepath.Join(home, rep.SshId)
 	setSSHCredentials(sshKeyFile)
 	retpath, _ := checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
-    if retpath != tmppath {
-    	log.Println("ERROR: could not checkout git repo at specific branch/tag")
-    }
+	if retpath != tmppath {
+		log.Println("ERROR: could not checkout git repo at specific branch/tag")
+	}
 	//4. return the path to where repo has been cloned
 
 	return retpath, err

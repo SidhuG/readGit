@@ -20,15 +20,16 @@ import (
 	"github.com/spf13/viper"
 	//"github.com/SidhuG/readGit/gitCmd"
 )
-var git_url string 
-var git_tag string 
+
+var git_url string
+var git_tag string
 var FQDN_list string
 
 // gitUrlCmd represents the gitUrl command
 var gitUrlCmd = &cobra.Command{
 	Use:   "gitUrl",
 	Short: "remote repo url",
-	Long: `Checks out remote git repo`,
+	Long:  `Checks out remote git repo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("gitUrl command used, values in config file will be overridden with following")
 		fmt.Println("--- Git URL: ", git_url)
@@ -56,7 +57,7 @@ func init() {
 
 	viper.BindPFlag("url", gitUrlCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("tag", gitUrlCmd.PersistentFlags().Lookup("tag"))
-	
+
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// gitUrlCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
