@@ -1,9 +1,4 @@
-//*****************************************************************
-// Package: gitCmd
-// File: gitCheckouBranch
-// Purpose: Checkout git branch at specific tags
-// Author: SidhuG
-//*******************************************************************
+// Package gitCmd Checkout git branch at specific tags
 package gitCmd
 
 import (
@@ -16,7 +11,7 @@ import (
 	"strings"
 )
 
-var git_sshid string
+var gitSshid string
 
 // MyError is an error implementation that includes a time and message.
 type gitCmdError struct {
@@ -28,7 +23,7 @@ func (e gitCmdError) Error() string {
 }
 
 func credentialsCallback(url string, username string, allowedTypes git.CredType) (git.ErrorCode, *git.Cred) {
-	//ret, cred := git.NewCredSshKey("git", git_sshid+".pub", git_sshid, "")
+	//ret, cred := git.NewCredSshKey("git", gitSshid+".pub", gitSshid, "")
 	ret, cred := git.NewCredSshKeyFromAgent(username)
 	return git.ErrorCode(ret), &cred
 }
@@ -39,12 +34,12 @@ func certificateCheckCallback(cert *git.Certificate, valid bool, hostname string
 }
 
 func setSSHCredentials(sshid string) int {
-	git_sshid = sshid
-	log.Println("Setting key file to : ", git_sshid)
+	gitSshid = sshid
+	log.Println("Setting key file to : ", gitSshid)
 	return 0
 }
 
-func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, error) {
+func checkoutBranch(gitURL string, branchName string, tagToUse string) (string, error) {
 
 	var tmpDirPath = "/tmp/readGit"
 
@@ -59,8 +54,8 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 	cloneOptions.CheckoutOpts.Strategy = 1 //Otherwise it is dry run. Nothing really clones
 	cloneOptions.FetchOptions.RemoteCallbacks = cbs
 
-	fmt.Println("About to clone: ", gitUrl)
-	repo, err := git.Clone(gitUrl, tmpDirPath, cloneOptions)
+	fmt.Println("About to clone: ", gitURL)
+	repo, err := git.Clone(gitURL, tmpDirPath, cloneOptions)
 	if err != nil {
 		log.Panic(err)
 		//log.Println("FATAL: could not clone")
@@ -74,7 +69,7 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 	//Parse tags
 	iter, err := repo.NewReferenceIterator()
 	var tagid *git.Oid
-	var tagObjId *git.Oid
+	var tagObjID *git.Oid
 	var tagName string
 	ref, err := iter.Next()
 	for err == nil {
@@ -87,7 +82,7 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 				if err != nil {
 					fmt.Println("Could not look up tag Id")
 				}
-				tagObjId = tag.TargetId()
+				tagObjID = tag.TargetId()
 				break
 			}
 		}
@@ -109,7 +104,7 @@ func checkoutBranch(gitUrl string, branchName string, tagToUse string) (string, 
 	defer remoteBranch.Free()
 
 	//Find commit for the tag
-	headCommit, err := repo.LookupCommit(tagObjId)
+	headCommit, err := repo.LookupCommit(tagObjID)
 	if err != nil {
 		panic(err)
 	}

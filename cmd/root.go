@@ -18,10 +18,10 @@ import (
 	"os"
 
 	git "github.com/SidhuG/readGit/gitCmd"
-	hiera "github.com/SidhuG/readGit/parseHiera"
+	//hiera "github.com/SidhuG/readGit/parseHiera"
 	fqdn "github.com/SidhuG/readGit/verifyFQDNs"
 
-	kv "github.com/SidhuG/readGit/kvEndpoint"
+	//kv "github.com/SidhuG/readGit/kvEndpoint"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,9 +29,10 @@ import (
 
 var cfgFile string
 var prjctName string
-var map_git_config []interface{} = make([]interface{}, 2)
+var mapGitConfig = make([]interface{}, 2)
+var verifiedListCh = make([]<-chan fqdn.VerifyStatus, 0)
 
-//var git_config_url map[interface{}]interface{} = make(map[interface{}]interface{})
+//var gitConfigURL map[interface{}]interface{} = make(map[interface{}]interface{})
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -50,32 +51,32 @@ var RootCmd = &cobra.Command{
 		fmt.Println()
 
 		//Extract git url, git tag and git user ssh id file path
-		map_git_config = viper.Get("git_config").([]interface{})
-		git_config_url := map_git_config[0].(map[interface{}]interface{})
-		git_config_project := map_git_config[1].(map[interface{}]interface{})
-		git_config_tag := map_git_config[2].(map[interface{}]interface{})
-		git_config_user := map_git_config[3].(map[interface{}]interface{})
-		git_user_id := map_git_config[4].(map[interface{}]interface{})
-		git_config_branch := map_git_config[5].(map[interface{}]interface{})
+		mapGitConfig = viper.Get("git_config").([]interface{})
+		gitConfigURL := mapGitConfig[0].(map[interface{}]interface{})
+		gitConfigProject := mapGitConfig[1].(map[interface{}]interface{})
+		gitConfigTag := mapGitConfig[2].(map[interface{}]interface{})
+		gitConfigUser := mapGitConfig[3].(map[interface{}]interface{})
+		gitUserID := mapGitConfig[4].(map[interface{}]interface{})
+		gitConfigBranch := mapGitConfig[5].(map[interface{}]interface{})
 
-		fmt.Println("Using git url: ", git_config_url["url"])
-		fmt.Println("Using git tag: ", git_config_tag["tag"])
-		fmt.Println("Using git user id: ", git_user_id["ssh_id"])
-		fmt.Println("Using branch: ", git_config_branch["branch"])
+		fmt.Println("Using git url: ", gitConfigURL["url"])
+		fmt.Println("Using git tag: ", gitConfigTag["tag"])
+		fmt.Println("Using git user id: ", gitUserID["ssh_id"])
+		fmt.Println("Using branch: ", gitConfigBranch["branch"])
 
 		//Extract List of FQDNs to apply changes to
-		map_FQDN_list := viper.Get("fqdn_list").([]interface{})
-		fmt.Println("To update hosts: ", map_FQDN_list)
-		//fmt.Println("Found first FQDN : " , map_FQDN_list[0])
+		mapFQDNList := viper.Get("fqdn_list").([]interface{})
+		fmt.Println("To update hosts: ", mapFQDNList)
+		//fmt.Println("Found first FQDN : " , mapFQDNList[0])
 
 		//Checkout git repo
 		rep := git.RepoStruct{
-			GitUrl:      git_config_url["url"].(string),
-			GitBranch:   git_config_branch["branch"].(string),
-			GitTag:      git_config_tag["tag"].(string),
-			SshId:       git_user_id["ssh_id"].(string),
-			GitUser:     git_config_user["user"].(string),
-			ProjectRepo: git_config_project["projectrepo"].(string)}
+			GitURL:      gitConfigURL["url"].(string),
+			GitBranch:   gitConfigBranch["branch"].(string),
+			GitTag:      gitConfigTag["tag"].(string),
+			SSHId:       gitUserID["ssh_id"].(string),
+			GitUser:     gitConfigUser["user"].(string),
+			ProjectRepo: gitConfigProject["projectrepo"].(string)}
 
 		dirPath, err := git.CheckOutRepo(rep)
 		if err != nil {
@@ -84,12 +85,14 @@ var RootCmd = &cobra.Command{
 			fmt.Println("Git repo cloned at: ", dirPath)
 		}
 
+		var verifyReturn <-chan fqdn.VerifyStatus
 		// traverse FQDN List
-		//for _, hostname := range map_FQDN_list {
-		//	fmt.Println("Constructing endpoints for FQDN: ", hostname)
-		//}
+		for _, hostname := range mapFQDNList {
+			fmt.Println("Constructing endpoints for FQDN: ", hostname)
+			verifyReturn = fqdn.Verify(hostname.(string))
+			verifiedListCh = append(verifiedListCh, verifyReturn)
+		}
 
-		verifiedListCh := fqdn.verify(dirPath, map_FQDN_list)
 	},
 }
 

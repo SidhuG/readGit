@@ -21,25 +21,27 @@ import (
 	//"github.com/SidhuG/readGit/gitCmd"
 )
 
-var git_url string
-var git_tag string
-var FQDN_list string
+var gitURL string
+var gitTag string
 
-// gitUrlCmd represents the gitUrl command
-var gitUrlCmd = &cobra.Command{
+//FQDNList List of FQDNS to update
+var FQDNList string
+
+// gitURLCmd represents the gitUrl command
+var gitURLCmd = &cobra.Command{
 	Use:   "gitUrl",
 	Short: "remote repo url",
 	Long:  `Checks out remote git repo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("gitUrl command used, values in config file will be overridden with following")
-		fmt.Println("--- Git URL: ", git_url)
-		fmt.Println("--- Git Tag: ", git_tag)
-		fmt.Println("--- FQDNs: ", FQDN_list)
+		fmt.Println("--- Git URL: ", gitURL)
+		fmt.Println("--- Git Tag: ", gitTag)
+		fmt.Println("--- FQDNs: ", FQDNList)
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(gitUrlCmd)
+	RootCmd.AddCommand(gitURLCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -47,18 +49,18 @@ func init() {
 	// and all subcommands, e.g.:
 
 	//git url where configuration files are located
-	gitUrlCmd.PersistentFlags().StringVarP(&git_url, "url", "u", "", "git remote url")
+	gitURLCmd.PersistentFlags().StringVarP(&gitURL, "url", "u", "", "git remote url")
 
 	//git tag to release
-	gitUrlCmd.PersistentFlags().StringVarP(&git_tag, "tag", "t", "", "tag to use")
+	gitURLCmd.PersistentFlags().StringVarP(&gitTag, "tag", "t", "", "tag to use")
 
 	//list of FQDN to apply this configuration change
-	gitUrlCmd.PersistentFlags().StringVarP(&FQDN_list, "fqdns", "f", "", "FQDNs to apply this configuration")
+	gitURLCmd.PersistentFlags().StringVarP(&FQDNList, "fqdns", "f", "", "FQDNList FQDNs to apply this configuration")
 
-	viper.BindPFlag("url", gitUrlCmd.PersistentFlags().Lookup("url"))
-	viper.BindPFlag("tag", gitUrlCmd.PersistentFlags().Lookup("tag"))
+	viper.BindPFlag("url", gitURLCmd.PersistentFlags().Lookup("url"))
+	viper.BindPFlag("tag", gitURLCmd.PersistentFlags().Lookup("tag"))
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// gitUrlCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// gitURLCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

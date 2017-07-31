@@ -18,8 +18,9 @@ import (
 	//"reflect"
 )
 
+//RepoStruct structure containing git user, repo config
 type RepoStruct struct {
-	GitUrl, GitUser, SshId, ProjectRepo, GitBranch, GitTag string
+	GitURL, GitUser, SSHId, ProjectRepo, GitBranch, GitTag string
 }
 
 func emptydir(dir string) error {
@@ -41,6 +42,7 @@ func emptydir(dir string) error {
 	return nil
 }
 
+//CheckOutRepo checks out repo
 func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 
 	//1. Make tmp dir
@@ -60,9 +62,9 @@ func CheckOutRepo(rep RepoStruct) (dirPath string, err error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	sshKeyFile := filepath.Join(home, rep.SshId)
+	sshKeyFile := filepath.Join(home, rep.SSHId)
 	setSSHCredentials(sshKeyFile)
-	retpath, _ := checkoutBranch("git@"+rep.GitUrl+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
+	retpath, _ := checkoutBranch("git@"+rep.GitURL+":"+rep.GitUser+"/"+rep.ProjectRepo, rep.GitBranch, rep.GitTag)
 	if retpath != tmppath {
 		log.Println("ERROR: could not checkout git repo at specific branch/tag")
 	}

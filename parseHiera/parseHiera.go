@@ -4,9 +4,10 @@
 // Purpose: parses hiera according to config
 // Author: SidhuG
 //*******************************************************************
+
 package parseHiera
 
-import (
-	"fmt"
-	"log"
-)
+//import (
+//	"fmt"
+//	"log"
+//)
