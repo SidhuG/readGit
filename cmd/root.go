@@ -31,6 +31,7 @@ var cfgFile string
 var prjctName string
 var mapGitConfig = make([]interface{}, 2)
 var verifiedListCh = make([]<-chan fqdn.VerifyStatus, 0)
+var status fqdn.VerifyStatus
 
 //var gitConfigURL map[interface{}]interface{} = make(map[interface{}]interface{})
 
@@ -93,6 +94,11 @@ var RootCmd = &cobra.Command{
 				verifyReturn = fqdn.Verify(hostname.(string))
 				verifiedListCh = append(verifiedListCh, verifyReturn)
 			}
+		}
+
+		for _, verified := range verifiedListCh {
+			status = <-verified
+			fmt.Println("Verified: ", status.Hostname, status.Status)
 		}
 
 	},
