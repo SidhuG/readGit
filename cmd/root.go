@@ -86,11 +86,13 @@ var RootCmd = &cobra.Command{
 		}
 
 		var verifyReturn <-chan fqdn.VerifyStatus
-		// traverse FQDN List
-		for _, hostname := range mapFQDNList {
-			fmt.Println("Constructing endpoints for FQDN: ", hostname)
-			verifyReturn = fqdn.Verify(hostname.(string))
-			verifiedListCh = append(verifiedListCh, verifyReturn)
+		if fqdn.LoadYaml(dirPath) == 0 {
+			// traverse FQDN List
+			for _, hostname := range mapFQDNList {
+				//fmt.Println("Constructing endpoints for FQDN: ", hostname)
+				verifyReturn = fqdn.Verify(hostname.(string))
+				verifiedListCh = append(verifiedListCh, verifyReturn)
+			}
 		}
 
 	},

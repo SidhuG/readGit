@@ -9,6 +9,7 @@ package verifyFQDNs
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	//	"log"
 )
 
@@ -29,7 +30,17 @@ type VerifyStatus struct {
 
 //LoadYaml LoadYaml specified by the dir path
 func LoadYaml(dirPath string) int {
-
+	fmt.Println("LoadYaml conf file at location : ", dirPath)
+	//viper.Debug()
+	viper.AddConfigPath(dirPath)
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("conf")
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Sprintf("Fatal error config file: %s \n", err))
+	}
+	fqdnConstr := viper.GetString("FQDN_CONSTRUCT")
+	fmt.Println("FQDN_CONSTRUCT: ", fqdnConstr)
 	return 0
 }
 
