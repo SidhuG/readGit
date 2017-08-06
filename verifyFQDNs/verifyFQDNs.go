@@ -10,6 +10,7 @@ package verifyFQDNs
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"text/template"
 	//	"log"
 )
 
@@ -28,6 +29,8 @@ type VerifyStatus struct {
 	Status   bool
 }
 
+var fqdnConstr string
+
 //LoadYaml LoadYaml specified by the dir path
 func LoadYaml(dirPath string) int {
 	fmt.Println("LoadYaml conf file at location : ", dirPath)
@@ -39,8 +42,11 @@ func LoadYaml(dirPath string) int {
 	if err != nil {             // Handle errors reading the config file
 		panic(fmt.Sprintf("Fatal error config file: %s \n", err))
 	}
-	fqdnConstr := viper.GetString("FQDN_CONSTRUCT")
+	fqdnConstr = viper.GetString("FQDN_CONSTRUCT")
 	fmt.Println("FQDN_CONSTRUCT: ", fqdnConstr)
+
+	pools := viper.Get("pools")
+	fmt.Println("Pools: ", pools)
 	return 0
 }
 
@@ -52,6 +58,9 @@ func Verify(hostname string) <-chan VerifyStatus {
 		//fmt.Println("Constructing endpoints for FQDN: ", hostname)
 		//TODO
 		//
+		//Create a new template based on FQDN construct
+		t := template.Must(template.New("FQDN_CONSTRUCT").Parse(fqdnConstr))
+		fmt.Println("DefinedTemplates: ", t.DefinedTemplates())
 		//if hostname is valid, then set verifyStatus to true, otherwise false
 		vs := VerifyStatus{
 			Hostname: hostname,
