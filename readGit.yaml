@@ -2,7 +2,7 @@
 git_config:
   - url: github.com
   - projectrepo: hiera_conf_example.git
-  - tag: 0.0.8
+  - tag: 0.1.0
   - user: SidhuG
   - ssh_id: SidhuG
   - branch: master
